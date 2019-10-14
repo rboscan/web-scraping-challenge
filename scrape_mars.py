@@ -1,8 +1,9 @@
 from bs4 import BeautifulSoup as bs
 import requests
 from selenium import webdriver
-import pandas as pd
 from splinter import Browser
+import pandas as pd
+
 
 def init_browser():
 
@@ -12,6 +13,8 @@ def init_browser():
 def scrape():
 
     browser = init_browser()
+    
+    mars_dict={}
 
     mars_url = "https://mars.nasa.gov/news/?page=0&per_page=40&order=publish_date+desc%2Ccreated_at+desc&search=&category=19%2C165%2C184%2C204&blank_scope=Latest"
 
@@ -24,10 +27,11 @@ def scrape():
     #Most recent article from Mars website
 
     recent_article = soup.find('div',class_='content_title').a.text
+    mars_dict['recent.article'] = recent_article
+    
     recent_date = soup.find('div', class_='list_date').text
-    article_date =(f'{recent_article} {recent_date}')
-    article_date
-
+    mars_dict['recent.date'] = recent_date
+    
     # Change URL to JPL website
 
     jpl_url = "https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars"
@@ -43,7 +47,7 @@ def scrape():
     jpl_article = soup.find('article').attrs
     jpl_string = jpl_article['style'].split("'")[1]
     featured_image_url = 'https://www.jpl.nasa.gov' + jpl_string
-    featured_image_url
+    mars_dict['featured.image'] = featured_image_url
 
     # Change url to mars weather twitter
 
@@ -62,13 +66,14 @@ def scrape():
     weather = weather.contents[0]
     weather_string = str(weather)
     current_mars_weather = weather_string.replace('\n','')
-    current_mars_weather
 
+    mars_dict['weather'] = current_mars_weather
     # Get URL for Mars Facts and use pandas to scrape the necessary table
 
     mars_facts_url = "https://space-facts.com/mars/"
     mars_facts = pd.read_html(mars_facts_url)[1]
-    mars_facts
+
+    mars_dict['mars.table'] = mars_facts
 
     # Mars hemisphere url
 
@@ -103,5 +108,16 @@ def scrape():
         
         # Appends dictionary with titles and urls
         hemispheres.append({'title':hemisphere_title, 'img_url':parent_url})
+    
+    mars_dict['hemispheres'] = hemispheres
+    
+    browser.quit()
+    return mars_dict
 
-    return None
+    # helper function to build surf report
+def build_report(mars_report):
+    final_report = ""
+    for p in mars_report:
+        final_report += " " + p.get_text()
+        print(final_report)
+    return final_report
