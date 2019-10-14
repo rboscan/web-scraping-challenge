@@ -114,10 +114,3 @@ def scrape():
     browser.quit()
     return mars_dict
 
-    # helper function to build surf report
-def build_report(mars_report):
-    final_report = ""
-    for p in mars_report:
-        final_report += " " + p.get_text()
-        print(final_report)
-    return final_report
