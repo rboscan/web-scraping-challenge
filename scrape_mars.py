@@ -9,95 +9,99 @@ def init_browser():
     executable_path = {'executable_path': 'chromedriver.exe'}
     browser = Browser('chrome', **executable_path, headless=False)
 
-mars_url = "https://mars.nasa.gov/news/?page=0&per_page=40&order=publish_date+desc%2Ccreated_at+desc&search=&category=19%2C165%2C184%2C204&blank_scope=Latest"
+def scrape():
 
-#Parse url with splinter and beautifulsoup
+    browser = init_browser()
 
-browser.visit(mars_url)
-mars_html = browser.html
-soup = bs(mars_html, 'lxml')
+    mars_url = "https://mars.nasa.gov/news/?page=0&per_page=40&order=publish_date+desc%2Ccreated_at+desc&search=&category=19%2C165%2C184%2C204&blank_scope=Latest"
 
-#Most recent article from Mars website
+    #Parse url with splinter and beautifulsoup
 
-recent_article = soup.find('div',class_='content_title').a.text
-recent_date = soup.find('div', class_='list_date').text
-article_date =(f'{recent_article} {recent_date}')
-article_date
+    browser.visit(mars_url)
+    mars_html = browser.html
+    soup = bs(mars_html, 'lxml')
 
-# Change URL to JPL website
+    #Most recent article from Mars website
 
-jpl_url = "https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars"
-browser.visit(jpl_url)
+    recent_article = soup.find('div',class_='content_title').a.text
+    recent_date = soup.find('div', class_='list_date').text
+    article_date =(f'{recent_article} {recent_date}')
+    article_date
 
-# Parse url with splinter and beautifulsoup
+    # Change URL to JPL website
 
-jpl_html = browser.html
-soup = bs(jpl_html, 'lxml')
+    jpl_url = "https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars"
+    browser.visit(jpl_url)
 
-# Find background image url through the use of splinter and soup, then creating a functioning link to said image in full res.
+    # Parse url with splinter and beautifulsoup
 
-jpl_article = soup.find('article').attrs
-jpl_string = jpl_article['style'].split("'")[1]
-featured_image_url = 'https://www.jpl.nasa.gov' + jpl_string
-featured_image_url
+    jpl_html = browser.html
+    soup = bs(jpl_html, 'lxml')
 
-# Change url to mars weather twitter
+    # Find background image url through the use of splinter and soup, then creating a functioning link to said image in full res.
 
-mars_weather_url = 'https://twitter.com/marswxreport?lang=en'
-browser.visit(mars_weather_url)
+    jpl_article = soup.find('article').attrs
+    jpl_string = jpl_article['style'].split("'")[1]
+    featured_image_url = 'https://www.jpl.nasa.gov' + jpl_string
+    featured_image_url
 
-# Parse website with beautiful soup and splinter
+    # Change url to mars weather twitter
 
-mars_weather_html = browser.html
-soup = bs(mars_weather_html, 'lxml')
+    mars_weather_url = 'https://twitter.com/marswxreport?lang=en'
+    browser.visit(mars_weather_url)
 
-# Use BeautifulSoup to parse through latest tweet and obtain text without children inside parent tag
-# and then turning the NavigableString object into a python string, as well as removing new lines.
+    # Parse website with beautiful soup and splinter
 
-weather = soup.find('p', class_="TweetTextSize TweetTextSize--normal js-tweet-text tweet-text")
-weather = weather.contents[0]
-weather_string = str(weather)
-current_mars_weather = weather_string.replace('\n','')
-current_mars_weather
+    mars_weather_html = browser.html
+    soup = bs(mars_weather_html, 'lxml')
 
-# Get URL for Mars Facts and use pandas to scrape the necessary table
+    # Use BeautifulSoup to parse through latest tweet and obtain text without children inside parent tag
+    # and then turning the NavigableString object into a python string, as well as removing new lines.
 
-mars_facts_url = "https://space-facts.com/mars/"
-mars_facts = pd.read_html(mars_facts_url)[1]
-mars_facts
+    weather = soup.find('p', class_="TweetTextSize TweetTextSize--normal js-tweet-text tweet-text")
+    weather = weather.contents[0]
+    weather_string = str(weather)
+    current_mars_weather = weather_string.replace('\n','')
+    current_mars_weather
 
-# Mars hemisphere url
+    # Get URL for Mars Facts and use pandas to scrape the necessary table
 
-mars_hemisphere_url = "https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
-browser.visit(mars_hemisphere_url)
+    mars_facts_url = "https://space-facts.com/mars/"
+    mars_facts = pd.read_html(mars_facts_url)[1]
+    mars_facts
 
-mars_hemisphere_html = browser.html
-soup = bs(mars_hemisphere_html, 'lxml')
+    # Mars hemisphere url
 
-hemisphere_thumbs = soup.find_all('div',class_="item")
+    mars_hemisphere_url = "https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
+    browser.visit(mars_hemisphere_url)
 
-base_url = "https://astrogeology.usgs.gov"
+    mars_hemisphere_html = browser.html
+    soup = bs(mars_hemisphere_html, 'lxml')
 
-hemispheres = []
-hemispheres_dict = {}
+    hemisphere_thumbs = soup.find_all('div',class_="item")
 
-for item in hemisphere_thumbs:
-    
-    # Finds hemisphere titles from menu
-    hemisphere_title = item.h3.text
-    hemisphere_title = hemisphere_title.replace(' Enhanced','')
-    
-    # Finds hemisphere main paige image links and sets them to a variable
-    image_link = item.a.get('href')
-    image_url = base_url + image_link
-    
-    # Parses through URL to obtain main image
-    browser.visit(image_url)
-    url_html = browser.html
-    soup = bs(url_html, 'lxml')
-    
-    parent_url = soup.find('div',class_='downloads').a.get('href')
-    
-    # Appends dictionary with titles and urls
-    hemispheres.append({'title':hemisphere_title, 'img_url':parent_url})
+    base_url = "https://astrogeology.usgs.gov"
 
+    hemispheres = []
+
+    for item in hemisphere_thumbs:
+        
+        # Finds hemisphere titles from menu
+        hemisphere_title = item.h3.text
+        hemisphere_title = hemisphere_title.replace(' Enhanced','')
+        
+        # Finds hemisphere main paige image links and sets them to a variable
+        image_link = item.a.get('href')
+        image_url = base_url + image_link
+        
+        # Parses through URL to obtain main image
+        browser.visit(image_url)
+        url_html = browser.html
+        soup = bs(url_html, 'lxml')
+        
+        parent_url = soup.find('div',class_='downloads').a.get('href')
+        
+        # Appends dictionary with titles and urls
+        hemispheres.append({'title':hemisphere_title, 'img_url':parent_url})
+
+    return None
