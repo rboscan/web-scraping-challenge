@@ -10,6 +10,8 @@ def init_browser():
     executable_path = {'executable_path': 'chromedriver.exe'}
     browser = Browser('chrome', **executable_path, headless=False)
 
+    return browser
+
 def scrape():
 
     browser = init_browser()
@@ -29,8 +31,11 @@ def scrape():
     recent_article = soup.find('div',class_='content_title').a.text
     mars_dict['recent.article'] = recent_article
     
-    recent_date = soup.find('div', class_='list_date').text
+    recent_date = soup.find('div', class_='list_text').div.text
     mars_dict['recent.date'] = recent_date
+
+    recent_teaser = soup.find('div', class_='article_teaser_body').text
+    mars_dict['recent.teaser'] = recent_teaser
     
     # Change URL to JPL website
 
