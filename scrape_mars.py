@@ -31,9 +31,6 @@ def scrape():
     recent_article = soup.find('div',class_='content_title').a.text
     mars_dict['recent.article'] = recent_article
     
-    recent_date = soup.find('div', class_='list_text').div.text
-    mars_dict['recent.date'] = recent_date
-
     recent_teaser = soup.find('div', class_='article_teaser_body').text
     mars_dict['recent.teaser'] = recent_teaser
     
@@ -76,7 +73,8 @@ def scrape():
     # Get URL for Mars Facts and use pandas to scrape the necessary table
 
     mars_facts_url = "https://space-facts.com/mars/"
-    mars_facts = pd.read_html(mars_facts_url)[1]
+    mars_facts = pd.read_html(mars_facts_url)[1].to_html()
+    mars_facts = mars_facts.replace('/n','')
 
     mars_dict['mars.table'] = mars_facts
 
